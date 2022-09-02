@@ -1,0 +1,61 @@
+Description: Downloads the latest version of VMWare Fusion and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.company.pkg.jamf.Zoom
+MinimumVersion: "2.3"
+ParentRecipe: com.github.homebysix.pkg.Zoom
+
+Input:
+  NAME: zoom.us
+  SELF_SERVICE_DESCRIPTION: "%NAME% is a software for meetings on your Mac."
+  CATEGORY: App Updates
+  PKG_CATEGORY: "%CATEGORY%"
+  GROUP_NAME: "Auto-Update - %NAME%"
+  GROUP_TEMPLATE: SmartGroup-update-smart-regex-only-if-installed.xml
+  EXTENSION_ATTRIBUTE_NAME: "Auto-Update - %NAME%"
+  EXTENSION_ATTRIBUTE_SCRIPT: ZOOM-ExtensionAttribute-CFBundleVersion.sh
+  VERSION_CRITERION: Application Version
+  TESTING_GROUP_NAME: 3PPTesting
+  POLICY_CATEGORY: App Updates
+  POLICY_TEMPLATE: ZOOM-Policy-install-latest-force.xml
+  POLICY_NAME: "%NAME%"
+  POLICY_RUN_COMMAND: 'chown -R "$(stat -f%Su /dev/console):staff" "/Applications/%NAME%.app" && echo "Corrected permissions for %NAME%."'
+  SELF_SERVICE_DISPLAY_NAME: "Install %NAME%"
+  SELF_SERVICE_ICON: "%NAME%.png"
+  INSTALL_BUTTON_TEXT: "Install"
+  REINSTALL_BUTTON_TEXT: "Reinstall"
+  JSS_INVENTORY_NAME: "%NAME%.app"
+
+Process:
+- Processor: com.github.grahampugh.jamf-upload.processors/JamfCategoryUploader
+  Arguments:
+    category_name: "%CATEGORY%"
+
+- Processor: com.github.grahampugh.jamf-upload.processors/JamfPackageUploader
+  Arguments:
+   pkg_category: "%CATEGORY%"
+
+- Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
+  Arguments:
+    version: "%version%"
+
+- Processor: com.github.grahampugh.jamf-upload.processors/JamfExtensionAttributeUploader
+  Arguments:
+    ea_script_path: "%EXTENSION_ATTRIBUTE_SCRIPT%"
+    ea_name: "%EXTENSION_ATTRIBUTE_NAME%"
+    replace_ea: false
+
+- Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+  Arguments:
+    computergroup_template: "%GROUP_TEMPLATE%"
+    computergroup_name: "%GROUP_NAME%-%version%"
+    replace_group: false
+
+- Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+  Arguments:
+    policy_template: "%POLICY_TEMPLATE%"
+    policy_name: "%POLICY_NAME%-%version%"
+    icon: "%SELF_SERVICE_ICON%"
+    replace_policy: false
+
+- Processor: com.github.grahampugh.jamf-upload.processors/JamfUploaderSlacker
+  Arguments:
+    slack_webhook_url: "tba"
