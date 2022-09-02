@@ -6,7 +6,7 @@ ParentRecipe: com.github.homebysix.pkg.Zoom
 Input:
   NAME: zoom.us
   SELF_SERVICE_DESCRIPTION: "%NAME% is a software for meetings on your Mac."
-  CATEGORY: App Updates
+  CATEGORY: Applications
   PKG_CATEGORY: "%CATEGORY%"
   GROUP_NAME: "Auto-Update - %NAME%"
   GROUP_TEMPLATE: SmartGroup-update-smart-regex-only-if-installed.xml
